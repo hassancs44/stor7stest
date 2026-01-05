@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>STOR7S | تسجيل الدخول</title>
+<style>
+body{background:#0b1220;color:#fff;font-family:tahoma;display:flex;justify-content:center;align-items:center;height:100vh}
+.card{background:#111c33;padding:30px;border-radius:10px;width:300px;box-shadow:0 0 10px #000}
+input,select,button{width:100%;padding:8px;margin:8px 0;border-radius:6px;border:none}
+button{background:#3b82f6;color:white;font-weight:bold;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+<h3>تسجيل الدخول</h3>
+<input id="name" placeholder="اسم المستخدم">
+<button onclick="go()">دخول</button>
+</div>
+
+<script>
+async function go(){
+  const n = document.getElementById("name").value.trim();
+  if(!n){ alert("⚠️ الرجاء كتابة اسم المستخدم"); return; }
+
+  // ⬅️ نرسل الاسم للباك اند للتحقق
+  let res = await fetch("http://127.0.0.1:5000/api/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ name: n })
+  });
+
+  let data = await res.json();
+
+  if(!data.ok){
+    alert("❌ اسم المستخدم غير موجود أو غير نشط");
+    return;
+  }
+
+  // ⬅️ حفظ بيانات المستخدم
+  localStorage.setItem("user", JSON.stringify({
+  name: data.user.name,
+  role: data.user.role,
+  department: data.user.department,
+  company: data.user.company,
+  branch: data.user.branch
+}));
+
+
+  // ⬅️ توجيه للصفحة حسب الدور
+  location = data.page;
+}
+</script>
+
+</body>
+</html>
