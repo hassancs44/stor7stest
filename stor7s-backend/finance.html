@@ -2,19 +2,16 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>STOR7S | الموارد البشرية (HR)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STOR7S | المالية (Finance)</title>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
 body{font-family:Tajawal;background:#0b1220;color:#fff;margin:0;}
 .topbar{background:#101d36;padding:15px;display:flex;justify-content:space-between;align-items:center;}
 .btn{background:#3b82f6;border:0;padding:10px 15px;border-radius:8px;color:#fff;cursor:pointer;}
-.btn.red{background:#ef4444;}
-.btn.green{background:#22c55e;}
-.btn.yellow{background:#eab308;}
 .card{background:#0f1b33;padding:20px;border-radius:12px;margin:10px;}
-input,select,textarea{width:100%;padding:10px;margin-top:5px;border-radius:8px;background:#162544;color:#fff;border:1px solid #243b55;}
+input,select{width:100%;padding:10px;margin-top:5px;border-radius:8px;background:#162544;color:#fff;border:1px solid #243b55;}
 table{width:100%;border-collapse:collapse;margin-top:15px;}
 th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.1);}
 </style>
@@ -23,245 +20,120 @@ th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.1);}
 <body>
 
 <div class="topbar">
-  <div>🟥 STOR7S | الموارد البشرية (HR)</div>
+  <div>💰 STOR7S | المالية (رقابة فقط)</div>
   <button class="btn" onclick="logout()">تسجيل خروج</button>
 </div>
 
-<nav style="display:flex;gap:10px;margin:10px;">
-  <button class="btn" onclick="loadAll()">📌 جميع العهد</button>
-  <button class="btn" onclick="showAdd()">➕ إضافة عهدة</button>
-  <button class="btn" onclick="showTransfer()">🔁 نقل عهدة</button>
-  <button class="btn" onclick="showClose()">🚫 إقفال عهدة</button>
-    <button class="btn" onclick="showRequest()">🧾 طلب شراء</button>
-</nav>
+<div class="card">
+  <h3>➕ إنشاء طلب جديد </h3>
 
-<div id="request" class="card" style="display:none;">
-  <h2>🧾 إنشاء طلب شراء (HR)</h2>
-  <textarea id="r_desc" placeholder="وصف الطلب"></textarea>
-  <button class="btn green" onclick="createRequest()">إرسال الطلب</button>
+  <input id="req_desc" placeholder="وصف الطلب">
+  <input id="req_company" placeholder="الشركة">
+  <input id="req_branch" placeholder="الفرع">
+
+  <button class="btn" onclick="createRequest()">📤 إرسال الطلب</button>
 </div>
 
-<!-- ================= قائمة العهد ================= -->
-<div id="list" class="card">
-  <h2>📌 جميع العهد الحالية</h2>
-  <table id="tbl"><tbody></tbody></table>
-</div>
+  <h2>📊 فحص العمليات المالية</h2>
+  <input id="search" placeholder="ابحث برقم الطلب / المورد / نوع الإجراء" onkeyup="filterData()">
+  <button class="btn" onclick="loadData()">🔄 تحديث</button>
+  <h3>🧾 عمليات الشراء</h3>
+<table id="finTable">
+  <thead>
+    <tr>
+      <th>رقم الطلب</th>
+      <th>المورد</th>
+      <th>السعر</th>
+      <th>الفاتورة</th>
+      <th>تاريخ الفاتورة</th>
+      <th>الحالة</th>
+      <th>عرض</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-<!-- ================= إضافة عهدة ================= -->
-<div id="add" class="card" style="display:none;">
-  <h2>➕ إضافة عهدة يدوية</h2>
-  <input id="a_emp" placeholder="الموظف المستفيد">
-<textarea id="a_items" placeholder="أدخل العهد (كل سطر صنف)
-مثال:
-Laptop
-Phone
-Screen"></textarea>
-<button class="btn green" onclick="addMultiCustody()">حفظ العهد</button>
-
-</div>
-
-<!-- ================= نقل عهدة ================= -->
-<div id="transfer" class="card" style="display:none;">
-  <h2>🔁 نقل عهدة</h2>
-  <input id="t_id" placeholder="رقم الطلب/العهدة">
-  <input id="t_new_emp" placeholder="الموظف الجديد">
-  <button class="btn yellow" onclick="transferCustody()">تنفيذ النقل</button>
-</div>
-
-<!-- ================= إقفال عهدة ================= -->
-<div id="close" class="card" style="display:none;">
-  <h2>🚫 إقفال عهدة</h2>
-  <input id="c_id" placeholder="رقم الطلب/العهدة">
-  <button class="btn red" onclick="closeCustody()">إقفال نهائي</button>
 </div>
 
 <script>
-const API = "/api/hr";
-const USER = JSON.parse(localStorage.getItem("user")||"{}");
+const API = "/api/finance";
 
-// ================= واجهة تحكم العرض =================
-function showRequest(){ hideAll(); document.getElementById("request").style.display="block"; }
-function showTransfer(){hideAll(); document.getElementById("transfer").style.display="block";}
-function showClose(){hideAll(); document.getElementById("close").style.display="block";}
-function hideAll(){
-  document.getElementById("add").style.display="none";
-  document.getElementById("transfer").style.display="none";
-  document.getElementById("close").style.display="none";
-}
-
-// ================= عرض العهد =================
-async function loadAll(){
-  let res = await fetch(API+"/custody/all");
+async function loadData(){
+  let res = await fetch(API+"/purchases");
   let data = await res.json();
 
-  let rows = `
+  let rows = "";
+  for(let r of data){
+    rows += `
     <tr>
-      <th>رقم</th>
-      <th>الموظف</th>
-      <th>القسم</th>
-      <th>النوع</th>
-      <th>الصنف</th>
-<th>السيريال</th>
-<th>الكمية</th>
-
-      <th>الحالة</th>
-    </tr>
-  `;
-
-  data.forEach(r=>{
-    rows+=`
-<tr>
-  <td>${r.رقم_العهدة}</td>
-  <td>${r.الموظف}</td>
-  <td>${r.القسم}</td>
-  <td>${r.نوع_العهدة}</td>
-  <td>${r.اسم_الصنف || "-"}</td>
-  <td>${r.سيريال || "-"}</td>
-  <td>${r.الكمية}</td>
-  <td>
-  ${r.الحالة}
-  <br>
-  <button class="btn green" onclick="receive('${r.رقم_العهدة}')">استلام</button>
-  <button class="btn yellow" onclick="dispatch('${r.رقم_العهدة}')">تسليم</button>
-</td>
-</tr>
-`;
-
-  });
-
-  document.querySelector("#tbl").innerHTML = rows;
-}
-
-// ================= إضافة عهدة =================
-async function addCustody(){
-  let data = {
-    رقم_العهدة: "CST-" + Date.now(),
-    الموظف: document.getElementById("a_emp").value,
-    القسم: USER.department,
-    نوع_العهدة: document.getElementById("a_type").value,
-    سيريال: document.getElementById("a_serial").value,
-    الكمية: 1,
-    ملاحظات: document.getElementById("a_note").value
-  };
-
-  let r = await fetch(API+"/custody/add",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
-  });
-
-  let res = await r.json();
-  if(res.ok){
-    alert("✔️ تم إنشاء العهدة بنجاح");
-    loadAll();
+      <td>${r.رقم_الطلب}</td>
+      <td>${r.المورد}</td>
+      <td>${r.السعر}</td>
+      <td>${r.الفاتورة}</td>
+      <td>${r.تاريخ_الفاتورة}</td>
+      <td>${r.الحالة}</td>
+      <td>
+        <button class="btn" onclick="viewFiles('${r.رقم_الطلب}')">📎 مرفقات</button>
+      </td>
+    </tr>`;
   }
+
+  document.querySelector("#finTable tbody").innerHTML = rows;
 }
 
 
-// ================= نقل عهدة =================
-async function transferCustody(){
-  let data = {
-  رقم_العهدة: document.getElementById("t_id").value,
-  الموظف: document.getElementById("t_new_emp").value
-};
-
-
-  let r = await fetch(API+"/custody/transfer",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
+function filterData(){
+  let q = document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll("#finTable tbody tr").forEach(r=>{
+    r.style.display = r.textContent.toLowerCase().includes(q) ? "" : "none";
   });
-
-  if(r.ok){
-    alert("✔️ تم نقل العهدة بنجاح");
-    loadAll();
-  }
 }
 
-
-// ================= إقفال عهدة =================
-async function closeCustody(){
-  alert("🚫 تم إقفال العهدة (سيتم توثيقها في الحركات لاحقًا)");
-}
-
-// ================= تسجيل خروج =================
 function logout(){localStorage.clear();location.reload();}
 
-// تحميل
-loadAll();
+// تحميل تلقائي
+loadData();
+
+    async function viewFiles(id){
+  let res = await fetch(API+"/attachments/"+id);
+  let files = await res.json();
+
+  if(files.length === 0){
+    alert("لا توجد مرفقات");
+    return;
+  }
+
+  let list = files.map(f =>
+    `📎 ${f.اسم_الملف}`
+  ).join("\n");
+
+  alert(list);
+}
 
     async function createRequest(){
-  let data = {
-    الرافع: USER.name,
-    القسم: USER.department,
-    الشركة: USER.company,
-    الفرع: USER.branch,
-    النوع: "شراء",
-    الوصف: document.getElementById("r_desc").value
-  };
+  const desc = document.getElementById("req_desc").value;
+  const company = document.getElementById("req_company").value;
+  const branch = document.getElementById("req_branch").value;
 
-  let r = await fetch(API+"/request/create",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
-  });
-
-  let res = await r.json();
-  if(res.ok){
-    alert("✔️ تم إنشاء الطلب رقم " + res.رقم_الطلب);
-    document.getElementById("r_desc").value="";
+  if(!desc){
+    alert("⚠️ أدخل وصف الطلب");
+    return;
   }
-}
 
-
-    async function addMultiCustody(){
-  let items = document.getElementById("a_items").value
-    .split("\n")
-    .filter(x=>x.trim())
-    .map(x=>({ اسم:x.trim() }));
-
-  let data = {
-  الموظف: document.getElementById("a_emp").value,
-  items: items
-};
-
-
-
-  let r = await fetch(API+"/custody/add-multi",{
+  let res = await fetch(API+"/create-request",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify(data)
+    body:JSON.stringify({
+      الوصف: desc,
+      الشركة: company,
+      الفرع: branch
+    })
   });
 
-  let res = await r.json();
-  if(res.ok){
-    alert("✔️ تم إضافة العهد");
-    loadAll();
-  }
-}
+  let r = await res.json();
+  alert(r.msg);
 
-
-    async function receive(id){
-  await fetch(API+"/custody/receive",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({رقم_العهدة:id})
-  });
-  loadAll();
-}
-
-async function dispatch(id){
-  await fetch(API+"/custody/dispatch",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({رقم_العهدة:id})
-  });
-  loadAll();
-}
-
-    function showAdd(){
-  hideAll();
-  document.getElementById("add").style.display="block";
+  document.getElementById("req_desc").value = "";
 }
 
 </script>
