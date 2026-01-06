@@ -41,8 +41,10 @@ def uploaded_files(filename):
 # ==============================
 @app.post("/api/login")
 def login_check():
-    data = request.get_json()
-    name = data.get("name","").strip()
+    data = request.get_json(silent=True) or request.form or {}
+    name = str(data.get("name", "")).strip()
+    if not name:
+        return jsonify({"ok": False, "msg": "اسم المستخدم فارغ"}), 400
     df = load("users").fillna("")
 
     if "اسم_المستخدم" not in df.columns:
