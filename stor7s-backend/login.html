@@ -23,7 +23,7 @@ async function go(){
   if(!n){ alert("⚠️ الرجاء كتابة اسم المستخدم"); return; }
 
   // ⬅️ نرسل الاسم للباك اند للتحقق
-  let res = await fetch("http://127.0.0.1:5000/api/login", {
+  let res = await fetch("/api/login", {
     method: "POST",
     headers: {"Content-Type":"application/json"},
     body: JSON.stringify({ name: n })
