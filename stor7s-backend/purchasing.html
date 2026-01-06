@@ -150,7 +150,7 @@ background:rgba(0,0,0,.55);display:none;justify-content:center;align-items:cente
 
 
 <script>
-const API = "http://localhost:5000/api/purchasing";
+const API = "/api/purchasing";
 const API_W = "http://localhost:5000/api/purchasing"; // مستودع نفس الملف
 
 // ================= TAB CONTROL =================
@@ -236,7 +236,7 @@ async function forwardIT(id){
 
 // ================= المستودع =================
 async function loadWarehouse(){
-  let res = await fetch("http://localhost:5000/api/purchasing/warehouse");
+  let res = await fetch("/api/purchasing/warehouse");
   let data = await res.json();
   let rows = "";
 
@@ -281,7 +281,7 @@ async function addItem(){
     الحالة: document.getElementById("w_state").value,
   };
 
-  let res = await fetch("http://localhost:5000/api/purchasing/warehouse/add",{
+  let res = await fetch("/api/purchasing/warehouse/add", {
     method:"POST",
     headers:{"Content-Type":"application/json"},
     body:JSON.stringify(data)
