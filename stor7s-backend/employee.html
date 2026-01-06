@@ -60,7 +60,7 @@ background:rgba(0,0,0,.6);backdrop-filter:blur(3px);">
 </div>
 
 <script>
-const API = "http://localhost:5000/api/employee";
+const API = "/api/employee";
 
 async function createReq(){
   let user = JSON.parse(localStorage.getItem("user"));
@@ -75,7 +75,7 @@ async function createReq(){
   form.append("الوصف", document.getElementById("desc").value);
   form.append("الحالة", "بانتظار اعتماد المدير");
 
-  let res = await fetch("http://127.0.0.1:5000/api/employee/create", {
+  let res = await fetch("/api/employee/create", {
     method:"POST", body:form
   });
 
@@ -119,7 +119,7 @@ async function uploadAttachment(){
     form.append("الشركة", user.company);
     form.append("الفرع", user.branch);
 
-    let res = await fetch("http://127.0.0.1:5000/api/employee/upload", {
+    let res = await fetch("/api/employee/upload", {
         method:"POST",
         body: form
     });
@@ -182,10 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
   loadOrders();
 });
 
-
-
     function previewFile(file){
-  const BASE = "http://localhost:5000/uploads/";
+  const BASE = "/uploads/";
   let ext = file.toLowerCase();
   let area = document.getElementById("previewArea");
 
