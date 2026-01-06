@@ -65,7 +65,7 @@ th,td{padding:10px;border-bottom:1px solid rgba(255,255,255,.1);}
 
 <script>
 /* ========================== API LINKS ========================== */
-const API = "http://localhost:5000/api/manager";
+const API = "/api/manager";
 const EMP = "http://localhost:5000/api/employee"; // لرفع الطلب من مسار الموظف
 const PURCH = "http://localhost:5000/api/purchasing";
 
@@ -95,7 +95,7 @@ async function loadPending(){
   let user = JSON.parse(localStorage.getItem("user"));
   let dept = user.department;
 
-  let res  = await fetch(`http://localhost:5000/api/manager/pending/${dept}`);
+  let res = await fetch(`/api/manager/pending/${dept}`);
   let data = await res.json();
 
   let rows = data.map(r => `
@@ -147,7 +147,7 @@ async function createReq(){
   form.append("الوصف", document.getElementById("m_desc").value);
   form.append("الحالة", "بانتظار المشتريات");
 
-  let res = await fetch("http://127.0.0.1:5000/api/employee/create", {
+  let res = await fetch("/api/employee/create", {
     method:"POST", body:form
   });
 
@@ -168,7 +168,7 @@ async function showAttachments(id){
   }
 
   let html = files.map(f => `
-    📄 <a href="http://localhost:5000/uploads/${f}" target="_blank" style="color:#3b82f6;">
+    📄 <a href="/uploads/${f}" target="_blank" style="color:#3b82f6;">
       ${f}
     </a>
   `).join("<br>");
